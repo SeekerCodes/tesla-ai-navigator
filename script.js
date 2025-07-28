@@ -1,47 +1,9 @@
-document.addEventListener('DOMContentLoaded', function() {
-
+document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('search-input');
-    const voiceButton = document.getElementById('voice-button');
     const aiButtons = document.querySelectorAll('.ai-button');
 
-    // 语音识别功能
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'zh-CN';
-        recognition.interimResults = false;
-
-        voiceButton.addEventListener('click', () => {
-            try {
-                recognition.start();
-                voiceButton.textContent = '听取中…';
-                voiceButton.style.backgroundColor = '#ff453a';
-            } catch(e) {
-                alert('语音识别服务可能正忙，请稍后再试。');
-            }
-        });
-
-        recognition.onresult = (event) => {
-            const speechResult = event.results[0][0].transcript;
-            searchInput.value = speechResult;
-        };
-
-        recognition.onend = () => {
-            voiceButton.textContent = '🎤';
-            voiceButton.style.backgroundColor = '#007aff';
-        };
-
-        recognition.onerror = (event) => {
-            alert(`语音识别错误: ${event.error}`);
-            voiceButton.textContent = '🎤';
-            voiceButton.style.backgroundColor = '#007aff';
-        };
-
-    } else {
-        voiceButton.disabled = true;
-        voiceButton.textContent = '🚫';
-        alert('抱歉，此浏览器不支持语音识别。');
-    }
+    // 页面加载后将光标聚焦到输入框
+    searchInput.focus();
 
     // AI 按钮点击事件
     aiButtons.forEach(button => {
@@ -55,23 +17,99 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = button.dataset.url;
             const type = button.dataset.type;
 
-            if (type === 'search') {
-                // 对于搜索类型，直接拼接URL并跳转
-                const searchUrl = url + encodeURIComponent(query);
-                window.open(searchUrl, '_blank');
-            } else if (type === 'chat') {
-                // 对于对话类型，复制到剪贴板并打开主页
-                navigator.clipboard.writeText(query).then(() => {
-                    alert('问题已复制！将在新页面打开，请长按输入框粘贴。');
-                    window.open(url, '_blank');
-                }).catch(err => {
-                    alert('复制失败，可能浏览器不支持或未授权。');
-                    window.open(url, '_blank'); // 即使复制失败也打开页面
-                });
-            }
+            // 如果搜索框有内容，拼接查询参数
+            const finalUrl = type === 'search' && query ? `${url}${encodeURIComponent(query)}` : url;
+
+            // 打开链接页面
+            const newWindow = window.open(finalUrl, "_blank");
+
+            // 检查目标页面是否弹出登录注册提示框
+            newWindow.onload = function () {
+                try {
+                    // 判断是否存在登录注册提示框
+                    const loginPrompt = newWindow.document.querySelector('.login-prompt'); // 假设登录提示框的类名为 "login-prompt"
+                    if (loginPrompt) {
+                        console.log("目标页面弹出了登录注册提示框，等待用户操作...");
+                        return; // 不做任何操作，等待用户处理登录注册
+                    }
+
+                    // 如果没有弹出登录注册界面，尝试将搜索框内容粘贴到聊天输入框
+                    const chatInput = newWindow.document.querySelector('.chat-input'); // 假设聊天输入框的类名为 "chat-input"
+                    if (chatInput) {
+                        chatInput.value = query; // 将搜索框内容粘贴到聊天输入框
+                        console.log("搜索框内容已粘贴到目标页面的聊天输入框。");
+                    } else {
+                        console.log("目标页面没有找到聊天输入框。");
+                    }
+                } catch (error) {
+                    console.error("无法访问目标页面内容，可能受到跨域限制。", error);
+                }
+            };
         });
     });
 });
+
+// 语言切换功能
+const translations = {
+    zh: {
+        title: "特斯拉AI导航",
+        header: "特斯拉 AI 导航",
+        "search-placeholder": "请在此输入您的问题...",
+        "tab-china": "中国",
+        "tab-usa": "美国",
+        "button-deepseek": "DeepSeek",
+        "button-metaso": "MetaSo",
+        "button-kimi": "Kimi AI",
+        "button-tongyi": "通义千问",
+        "button-doubao": "豆包",
+        "button-gemini": "Google Gemini",
+        "button-perplexity": "Perplexity AI",
+        "button-chatgpt": "OpenAI ChatGPT",
+        "button-claude": "Anthropic Claude",
+        "button-grok": "Grok"
+    },
+    en: {
+        title: "Tesla AI Navigation",
+        header: "Tesla AI Navigation",
+        "search-placeholder": "Enter your question here...",
+        "tab-china": "China",
+        "tab-usa": "USA",
+        "button-deepseek": "DeepSeek",
+        "button-metaso": "MetaSo",
+        "button-kimi": "Kimi AI",
+        "button-tongyi": "Tongyi Qianwen",
+        "button-doubao": "Doubao",
+        "button-gemini": "Google Gemini",
+        "button-perplexity": "Perplexity AI",
+        "button-chatgpt": "OpenAI ChatGPT",
+        "button-claude": "Anthropic Claude",
+        "button-grok": "Grok"
+    }
+};
+
+function switchLanguage(lang) {
+    const elements = document.querySelectorAll("[data-i18n]");
+    elements.forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (el.tagName === "INPUT" && el.hasAttribute("placeholder")) {
+            // 更新输入框的 placeholder 属性
+            el.setAttribute("placeholder", translations[lang][key]);
+        } else {
+            el.textContent = translations[lang][key];
+        }
+    });
+
+    // 更新 HTML 的 lang 属性
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("data-lang", lang);
+
+    // 单独处理 data-i18n-placeholder 的元素
+    const placeholderElements = document.querySelectorAll("[data-i18n-placeholder]");
+    placeholderElements.forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        el.setAttribute("placeholder", translations[lang][key]);
+    });
+}
 
 // Tab 切换功能
 function openTab(evt, tabName) {
@@ -81,21 +119,13 @@ function openTab(evt, tabName) {
     const tabLinks = document.querySelectorAll('.tab-link');
     tabLinks.forEach(link => link.classList.remove('active'));
 
-    document.getElementById(tabName).style.display = 'grid'; // 使用 grid 布局
+    document.getElementById(tabName).style.display = 'grid';
     evt.currentTarget.classList.add('active');
-}
-function setRealViewportHeight() {
-    // 检查 window.visualViewport 是否存在
-    if (window.visualViewport) {
-        const viewportHeight = window.visualViewport.height;
-        document.documentElement.style.setProperty('--viewport-height', `${viewportHeight}px`);
+
+    // 切换语言
+    if (tabName === "USA") {
+        switchLanguage("en");
+    } else if (tabName === "China") {
+        switchLanguage("zh");
     }
-}
-
-// 页面加载时设置一次
-window.addEventListener('load', setRealViewportHeight);
-
-// 当可视区域（比如键盘弹起或收起时）变化时，重新设置
-if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setRealViewportHeight);
 }

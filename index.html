@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="title">特斯拉AI导航</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 data-i18n="header">特斯拉 AI 导航</h1>
+            <div class="search-area">
+                <input type="text" id="search-input" placeholder="请在此输入您的问题..." data-i18n-placeholder="search-placeholder">
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTab(event, 'China')" data-i18n="tab-china">中国</button>
+            <button class="tab-link" onclick="openTab(event, 'USA')" data-i18n="tab-usa">美国</button>
+        </div>
+
+        <main id="content">
+            <div id="China" class="tab-content" style="display: grid;">
+                <button class="ai-button" data-url="https://www.deepseek.com/" data-type="chat" data-i18n="button-deepseek">DeepSeek</button>
+                <button class="ai-button" data-url="https://metaso.cn/search?q=" data-type="search" data-i18n="button-metaso">MetaSo</button>
+                <button class="ai-button" data-url="https://kimi.moonshot.cn/" data-type="chat" data-i18n="button-kimi">Kimi AI</button>
+                <button class="ai-button" data-url="https://tongyi.aliyun.com/qianwen/" data-type="chat" data-i18n="button-tongyi">通义千问</button>
+                <button class="ai-button" data-url="https://www.doubao.com/" data-type="chat" data-i18n="button-doubao">豆包</button>
+            </div>
+
+            <div id="USA" class="tab-content">
+                <button class="ai-button" data-url="https://gemini.google.com/app?q=" data-type="search" data-i18n="button-gemini">Google Gemini</button>
+                <button class="ai-button" data-url="https://www.perplexity.ai/search?q=" data-type="search" data-i18n="button-perplexity">Perplexity AI</button>
+                <button class="ai-button" data-url="https://chat.openai.com/" data-type="chat" data-i18n="button-chatgpt">OpenAI ChatGPT</button>
+                <button class="ai-button" data-url="https://claude.ai/" data-type="chat" data-i18n="button-claude">Anthropic Claude</button>
+                <button class="ai-button" data-url="https://x.com/grok" data-type="chat" data-i18n="button-grok">Grok</button>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
